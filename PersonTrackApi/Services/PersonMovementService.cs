@@ -5,6 +5,7 @@ using PersonTrackApi.Utitilies.Results;
 using RabbitMQEventBus.Constants;
 using RabbitMQEventBus.Events;
 using RabbitMQEventBus.Producer;
+using System.Linq.Expressions;
 
 namespace PersonTrackApi.Services;
 
@@ -78,7 +79,7 @@ public class PersonMovementService
     {
         var result = await _personMovementRepository.GetById(id);
 
-        if(result is null)
+        if (result is null)
             return new BaseDataResponse<PersonMovement>(default, false, "Movement not found");
 
         return new BaseDataResponse<PersonMovement>(result, true);
@@ -88,7 +89,14 @@ public class PersonMovementService
         searchKey.DateStart = searchKey.DateStart.Date.ToUniversalTime();
         searchKey.DateEnd = searchKey.DateEnd.Date.AddHours(23).AddMinutes(59).AddSeconds(59).ToUniversalTime();
 
-        var result = await _personMovementRepository.GetPersonMovementWithQuery(searchKey);
+        Expression<Func<PersonMovement, bool>> filterExpression;
+        if (searchKey.PersonId > 0)
+
+            filterExpression = e => e.PersonId == searchKey.PersonId && e.CreatedAt >= searchKey.DateStart && e.CreatedAt <= searchKey.DateEnd;
+        else
+            filterExpression = e => e.CreatedAt >= searchKey.DateStart && e.CreatedAt <= searchKey.DateEnd;
+
+        var result = await _personMovementRepository.GetPersonMovementWithQuery(filterExpression);
 
         return new BaseDataResponse<List<PersonMovement>>(result, true);
     }

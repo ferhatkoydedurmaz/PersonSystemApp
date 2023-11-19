@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PersonTrackApi.Data;
 using PersonTrackApi.Models;
+using System.Linq.Expressions;
 
 namespace PersonTrackApi.Repositories;
 
@@ -44,9 +45,9 @@ public class PersonMovementReportRepository(PersonContext context)
         return true;
     }
 
-    public async Task<List<PersonMovementReport>> GetPersonMovementReportWithQuery(PersonMovementSearchKey searchKeys)
+    public async Task<List<PersonMovementReport>> GetPersonMovementReportWithQuery(Expression<Func<PersonMovementReport, bool>> filterExpression)
     {
-        var result = await _context.PersonMovementReports.Where(w => w.PersonId == searchKeys.PersonId && w.CreatedAt >= searchKeys.DateStart && w.CreatedAt <= searchKeys.DateEnd).ToListAsync();
+        var result = await _context.PersonMovementReports.Where(filterExpression).ToListAsync();
 
         return result;
     }

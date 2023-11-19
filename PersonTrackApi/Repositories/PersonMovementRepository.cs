@@ -2,6 +2,7 @@
 using PersonTrackApi.Data;
 using PersonTrackApi.Models;
 using System;
+using System.Linq.Expressions;
 
 namespace PersonTrackApi.Repositories;
 
@@ -34,9 +35,10 @@ public class PersonMovementRepository(PersonContext context)
         return result;
     }
 
-    public async Task<List<PersonMovement>> GetPersonMovementWithQuery(PersonMovementSearchKey searchKeys)
+    public async Task<List<PersonMovement>> GetPersonMovementWithQuery(Expression<Func<PersonMovement,bool>> expression)
     {
-        var result = await _context.PersonMovements.Where(w => w.PersonId == searchKeys.PersonId && w.CreatedAt >= searchKeys.DateStart && w.CreatedAt <= searchKeys.DateEnd).ToListAsync();
+        var result = await _context.PersonMovements.Where(expression).ToListAsync();
+        //var result = await _context.PersonMovements.Where(w => w.PersonId == searchKeys.PersonId && w.CreatedAt >= searchKeys.DateStart && w.CreatedAt <= searchKeys.DateEnd).ToListAsync();
 
         return result;
     }

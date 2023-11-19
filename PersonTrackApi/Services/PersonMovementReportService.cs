@@ -2,6 +2,7 @@
 using PersonTrackApi.Repositories;
 using PersonTrackApi.Utitilies.Enums;
 using PersonTrackApi.Utitilies.Results;
+using System.Linq.Expressions;
 
 namespace PersonTrackApi.Services;
 
@@ -52,12 +53,19 @@ public class PersonMovementReportService
         }
     }
 
-    public async Task<BaseDataResponse<List<PersonMovementReport>>> GetPersonMovementReportWithQuery(PersonMovementSearchKey searchKeys)
+    public async Task<BaseDataResponse<List<PersonMovementReport>>> GetPersonMovementReportWithQuery(PersonMovementSearchKey searchKey)
     {
-        searchKeys.DateStart = searchKeys.DateStart.Date.ToUniversalTime();
-        searchKeys.DateEnd = searchKeys.DateEnd.Date.AddHours(23).AddMinutes(59).AddSeconds(59).ToUniversalTime();
+        searchKey.DateStart = searchKey.DateStart.Date.ToUniversalTime();
+        searchKey.DateEnd = searchKey.DateEnd.Date.AddHours(23).AddMinutes(59).AddSeconds(59).ToUniversalTime();
 
-        var result = await _personMovementReportRepository.GetPersonMovementReportWithQuery(searchKeys);
+        Expression<Func<PersonMovementReport, bool>> filterExpression;
+
+        if (searchKey.PersonId > 0)
+            filterExpression = e => e.PersonId == searchKey.PersonId && e.CreatedAt >= searchKey.DateStart && e.CreatedAt <= searchKey.DateEnd;
+        else
+            filterExpression = e => e.CreatedAt >= searchKey.DateStart && e.CreatedAt <= searchKey.DateEnd;
+
+        var result = await _personMovementReportRepository.GetPersonMovementReportWithQuery(filterExpression);
 
         return new BaseDataResponse<List<PersonMovementReport>>(result,true);
     }
