@@ -109,6 +109,9 @@ namespace PersonTrackApi.Migrations
                     b.Property<int>("PersonId")
                         .HasColumnType("integer");
 
+                    b.Property<TimeSpan>("TimeDifference")
+                        .HasColumnType("interval");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 

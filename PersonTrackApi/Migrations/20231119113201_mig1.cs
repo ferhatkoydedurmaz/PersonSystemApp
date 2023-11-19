@@ -41,6 +41,7 @@ namespace PersonTrackApi.Migrations
                     PersonId = table.Column<int>(type: "integer", nullable: false),
                     EnterDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ExitDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    TimeDifference = table.Column<TimeSpan>(type: "interval", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },

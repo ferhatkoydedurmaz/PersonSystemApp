@@ -41,6 +41,7 @@ public class PersonMovementReportService
                 return new BaseResponse(true);
 
             todayReport.ExitDate = DateTime.UtcNow;
+            todayReport.TimeDifference = todayReport.ExitDate - todayReport.EnterDate;
             todayReport.UpdatedAt = DateTime.UtcNow;
             var result = await _personMovementReportRepository.UpdateExitDateAsync(todayReport);
 

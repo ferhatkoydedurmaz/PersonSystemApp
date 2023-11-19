@@ -12,7 +12,7 @@ using PersonTrackApi.Data;
 namespace PersonTrackApi.Migrations
 {
     [DbContext(typeof(PersonContext))]
-    [Migration("20231118193307_mig1")]
+    [Migration("20231119113201_mig1")]
     partial class mig1
     {
         /// <inheritdoc />
@@ -111,6 +111,9 @@ namespace PersonTrackApi.Migrations
 
                     b.Property<int>("PersonId")
                         .HasColumnType("integer");
+
+                    b.Property<TimeSpan>("TimeDifference")
+                        .HasColumnType("interval");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");

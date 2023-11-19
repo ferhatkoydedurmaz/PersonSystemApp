@@ -9,6 +9,7 @@ public class PersonMovementReport
     public int PersonId { get; set; }
     public DateTime EnterDate { get; set; }
     public DateTime ExitDate { get; set; }
+    public TimeSpan TimeDifference { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 }
