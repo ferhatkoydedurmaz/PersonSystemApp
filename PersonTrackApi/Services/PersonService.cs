@@ -15,11 +15,19 @@ public class PersonService
 
     public async Task<BaseDataResponse<Person>> GetPersonAsync(int personId)
     {
-        var result = await _personRepository.GetByIdAsync(personId);
+        try
+        {
 
-        if(result is null)
-            return new BaseDataResponse<Person>(null, false, "Person not found");
+            var result = await _personRepository.GetByIdAsync(personId);
 
-        return new BaseDataResponse<Person>(result, true);
+            if (result is null)
+                return new BaseDataResponse<Person>(default, false, "Person not found");
+
+            return new BaseDataResponse<Person>(result, true);
+        }
+        catch
+        {
+            return new BaseDataResponse<Person>(default, false, "Failed to get person");
+        }
     }
 }

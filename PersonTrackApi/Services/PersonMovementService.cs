@@ -26,79 +26,114 @@ public class PersonMovementService
 
     public async Task<BaseResponse> AddPersonEnterMovementAsync(int personId)
     {
-        var personLastProcess = await _personMovementRepository.GetPersonLastProcess(personId);
-
-        if (personLastProcess is not null && personLastProcess.MovementType == (int)MovementTypeEnum.Enter)
-            return new BaseResponse(false, "Person already entered");
-
-        PersonMovementCreateEvent personMovementCreateEvent = new()
+        try
         {
-            PersonId = personId,
-            MovementType = (int)MovementTypeEnum.Enter,
-            MovementTypeName = nameof(MovementTypeEnum.Enter),
-            CreatedAt = DateTime.UtcNow
-        };
+            var personLastProcess = await _personMovementRepository.GetPersonLastProcess(personId);
 
-        var result = await AddPersonMovementAsync(personMovementCreateEvent);
+            if (personLastProcess is not null && personLastProcess.MovementType == (int)MovementTypeEnum.Enter)
+                return new BaseResponse(false, "Person already entered");
 
-        return result;
+            PersonMovementCreateEvent personMovementCreateEvent = new()
+            {
+                PersonId = personId,
+                MovementType = (int)MovementTypeEnum.Enter,
+                MovementTypeName = nameof(MovementTypeEnum.Enter),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var result = await AddPersonMovementAsync(personMovementCreateEvent);
+
+            return result;
+        }
+        catch
+        {
+            return new BaseResponse(false, "Failed to add person movement");
+        }
     }
 
     public async Task<BaseResponse> AddPersonExitMovementAsync(int personId)
     {
-        var personLastProcess = await _personMovementRepository.GetPersonLastProcess(personId);
-
-        if (personLastProcess is not null && personLastProcess.MovementType == (int)MovementTypeEnum.Exit)
-            return new BaseResponse(false, "Person already exited");
-
-        PersonMovementCreateEvent personMovementCreateEvent = new()
+        try
         {
-            PersonId = personId,
-            MovementType = (int)MovementTypeEnum.Exit,
-            MovementTypeName = nameof(MovementTypeEnum.Exit),
-            CreatedAt = DateTime.UtcNow
-        };
+            var personLastProcess = await _personMovementRepository.GetPersonLastProcess(personId);
 
-        var result = await AddPersonMovementAsync(personMovementCreateEvent);
+            if (personLastProcess is not null && personLastProcess.MovementType == (int)MovementTypeEnum.Exit)
+                return new BaseResponse(false, "Person already exited");
 
-        return result;
+            PersonMovementCreateEvent personMovementCreateEvent = new()
+            {
+                PersonId = personId,
+                MovementType = (int)MovementTypeEnum.Exit,
+                MovementTypeName = nameof(MovementTypeEnum.Exit),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var result = await AddPersonMovementAsync(personMovementCreateEvent);
+
+            return result;
+        }
+        catch
+        {
+            return new BaseResponse(false, "Failed to add person movement");
+        }
     }
 
     public async Task<BaseResponse> AddPersonMovementProcess(PersonMovement personMovement)
     {
-        var result = await _personMovementRepository.AddAsync(personMovement);
+        try
+        {
+            var result = await _personMovementRepository.AddAsync(personMovement);
 
-        if (result == false)
+            if (result == false)
+                return new BaseResponse(false, "Failed to add person movement");
+
+            _ = await _personMovementReportService.AddPersonMovementForReportAsync(personMovement);
+
+            return new BaseResponse(true, "Person movement added successfully");
+        }
+        catch
+        {
             return new BaseResponse(false, "Failed to add person movement");
-
-        _ = await _personMovementReportService.AddPersonMovementForReportAsync(personMovement);
-
-        return new BaseResponse(true, "Person movement added successfully");
+        }
     }
     public async Task<BaseDataResponse<PersonMovement>> GetPersonMovementById(int id)
     {
-        var result = await _personMovementRepository.GetById(id);
+        try
+        {
+            var result = await _personMovementRepository.GetById(id);
 
-        if (result is null)
-            return new BaseDataResponse<PersonMovement>(default, false, "Movement not found");
+            if (result is null)
+                return new BaseDataResponse<PersonMovement>(default, false, "Movement not found");
 
-        return new BaseDataResponse<PersonMovement>(result, true);
+            return new BaseDataResponse<PersonMovement>(result, true);
+        }
+        catch
+        {
+            return new BaseDataResponse<PersonMovement>(default, false, "Failed to get movement");
+        }
     }
     public async Task<BaseDataResponse<List<PersonMovement>>> GetPersonMovementsWithQuery(PersonMovementSearchKey searchKey)
     {
-        searchKey.DateStart = searchKey.DateStart.Date.ToUniversalTime();
-        searchKey.DateEnd = searchKey.DateEnd.Date.AddHours(23).AddMinutes(59).AddSeconds(59).ToUniversalTime();
+        try
+        {
+            searchKey.DateStart = searchKey.DateStart.Date.ToUniversalTime();
+            searchKey.DateEnd = searchKey.DateEnd.Date.AddHours(23).AddMinutes(59).AddSeconds(59).ToUniversalTime();
 
-        Expression<Func<PersonMovement, bool>> filterExpression;
-        if (searchKey.PersonId > 0)
+            Expression<Func<PersonMovement, bool>> filterExpression;
+            if (searchKey.PersonId > 0)
 
-            filterExpression = e => e.PersonId == searchKey.PersonId && e.CreatedAt >= searchKey.DateStart && e.CreatedAt <= searchKey.DateEnd;
-        else
-            filterExpression = e => e.CreatedAt >= searchKey.DateStart && e.CreatedAt <= searchKey.DateEnd;
+                filterExpression = e => e.PersonId == searchKey.PersonId && e.CreatedAt >= searchKey.DateStart && e.CreatedAt <= searchKey.DateEnd;
+            else
+                filterExpression = e => e.CreatedAt >= searchKey.DateStart && e.CreatedAt <= searchKey.DateEnd;
 
-        var result = await _personMovementRepository.GetPersonMovementWithQuery(filterExpression);
+            var result = await _personMovementRepository.GetPersonMovementWithQuery(filterExpression);
 
-        return new BaseDataResponse<List<PersonMovement>>(result, true);
+            return new BaseDataResponse<List<PersonMovement>>(result, true);
+        }
+        catch
+        {
+            return new BaseDataResponse<List<PersonMovement>>(default, false, "Failed to get person movements");
+        }
     }
     private async Task<BaseResponse> AddPersonMovementAsync(PersonMovementCreateEvent personMovementCreate)
     {
